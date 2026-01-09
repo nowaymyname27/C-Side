@@ -1,0 +1,14 @@
+# Compiled Binaries (The names of your output files)
+test
+my_game
+a.out
+
+# Object files
+*.o
+
+# macOS system files
+.DS_Store
+
+# If you want to keep your project clean from the cloned clay folder
+# (Optional: only do this if you want to manage clay separately)
+clay/
