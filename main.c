@@ -7,6 +7,7 @@
 typedef struct {
   char text[BUFFER_SIZE];
   int letterCount;
+  float timer;
 } TextBuffer;
 
 // Process keyboard input and update the buffer state
@@ -28,6 +29,19 @@ void handle_input(TextBuffer *buffer){
   if (IsKeyPressed(KEY_BACKSPACE) && buffer->letterCount > 0){
     buffer->letterCount--;
     buffer->text[buffer->letterCount] = '\0';
+    buffer->timer = 0;
+  }
+
+  // Handle Deletions: When key is held deletes rapidly
+  if (IsKeyDown(KEY_BACKSPACE) && buffer->letterCount > 0){
+    buffer->timer += GetFrameTime();
+    if (buffer->timer > 0.6){
+      buffer->letterCount--;
+      buffer->text[buffer->letterCount] = '\0';
+      buffer->timer = 0.58;
+    }
+  } else {
+    buffer->timer = 0;
   }
 }
 
@@ -56,8 +70,10 @@ int main(void) {
   // Initialize the buffer to all zeros
   TextBuffer buffer = { 
     .text = {0}, 
-    .letterCount = 0
+    .letterCount = 0,
+    .timer = 0
   };
+
 
   // Main game loop
   while(!WindowShouldClose()){
