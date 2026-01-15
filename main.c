@@ -25,6 +25,14 @@ void handle_input(TextBuffer *buffer){
     key = GetCharPressed();
   }
 
+  // Handles new line: Pressing ENTER allows for text to go to new line
+  if (IsKeyPressed(KEY_ENTER)){
+    buffer->text[buffer->letterCount] = '\n';
+    buffer->letterCount++;
+    buffer->text[buffer->letterCount] = '\0';
+    buffer->timer = 0;
+  }
+
   // Handle deletions: Decrease count and move the 'stop sign' back
   if (IsKeyPressed(KEY_BACKSPACE) && buffer->letterCount > 0){
     buffer->letterCount--;
@@ -52,13 +60,33 @@ void draw_to_screen(TextBuffer *buffer) {
     // Draw the main text buffer
     DrawText(buffer->text, 50, 50, 50, RED);
 
-    // Calculate cursor position based on text width
-    int width = MeasureText(buffer->text, 50);
+    // Calculate cursor horizontal position based on text width
+    int iterator = buffer->letterCount - 1;
+    int last_line_start = 0;
+    while (iterator >= 0 && buffer->text[iterator] != '\n'){
+      iterator--;
+    }
+    last_line_start = iterator + 1;
+    int width = MeasureText(&buffer->text[last_line_start], 50);
+
+    // Calculate cursor vertical position
+    int height = 0;
+    int counter = 0;
+    while (buffer->text[counter] != '\0'){
+      if (buffer->text[counter] == '\n'){
+        height++;
+        counter++;
+      } else {
+        counter++;
+      }
+    }
+
 
     // Blinking logic: Draw cursor only during the first half of every second
+    int LineHeight = 52;
     int whole_seconds = (int)GetTime();
     if (GetTime() - whole_seconds < 0.5){
-      DrawRectangle(55 + width, 50, 10, 45, PINK);
+      DrawRectangle(55 + width, 50 + (height * LineHeight), 10, 45, PINK);
     }
   EndDrawing();
 }
