@@ -8,6 +8,7 @@ typedef struct {
   char text[BUFFER_SIZE];
   int letterCount;
   float timer;
+  int cursorIndex;
 } TextBuffer;
 
 // Process keyboard input and update the buffer state
@@ -20,6 +21,7 @@ void handle_input(TextBuffer *buffer){
     if (buffer->letterCount < BUFFER_SIZE - 1) {
       buffer->text[buffer->letterCount] = (char)key;
       buffer->letterCount++;
+      buffer->cursorIndex++;
       buffer->text[buffer->letterCount] = '\0'; // Ensure string is always terminated
     }
     key = GetCharPressed();
@@ -29,6 +31,7 @@ void handle_input(TextBuffer *buffer){
   if (IsKeyPressed(KEY_ENTER)){
     buffer->text[buffer->letterCount] = '\n';
     buffer->letterCount++;
+    buffer->cursorIndex++;
     buffer->text[buffer->letterCount] = '\0';
     buffer->timer = 0;
   }
@@ -36,6 +39,7 @@ void handle_input(TextBuffer *buffer){
   // Handle deletions: Decrease count and move the 'stop sign' back
   if (IsKeyPressed(KEY_BACKSPACE) && buffer->letterCount > 0){
     buffer->letterCount--;
+    buffer->cursorIndex--;
     buffer->text[buffer->letterCount] = '\0';
     buffer->timer = 0;
   }
@@ -45,12 +49,24 @@ void handle_input(TextBuffer *buffer){
     buffer->timer += GetFrameTime();
     if (buffer->timer > 0.6){
       buffer->letterCount--;
+      buffer->cursorIndex--;
       buffer->text[buffer->letterCount] = '\0';
       buffer->timer = 0.58;
     }
   } else {
     buffer->timer = 0;
   }
+
+  if (IsKeyPressed(KEY_LEFT) && buffer->cursorIndex > 0){
+    buffer->cursorIndex--;
+    buffer->timer = 0;
+  }
+
+  if (IsKeyPressed(KEY_RIGHT) && buffer->cursorIndex < buffer->letterCount){
+    buffer->cursorIndex++;
+    buffer->timer = 0;
+  }
+
 }
 
 // Render the editor state to the window
@@ -61,18 +77,21 @@ void draw_to_screen(TextBuffer *buffer) {
     DrawText(buffer->text, 50, 50, 50, RED);
 
     // Calculate cursor horizontal position based on text width
-    int iterator = buffer->letterCount - 1;
+    int iterator = buffer->cursorIndex - 1;
     int last_line_start = 0;
     while (iterator >= 0 && buffer->text[iterator] != '\n'){
       iterator--;
     }
     last_line_start = iterator + 1;
+    char tempChar = buffer->text[buffer->cursorIndex];
+    buffer->text[buffer->cursorIndex] = '\0';
     int width = MeasureText(&buffer->text[last_line_start], 50);
+    buffer->text[buffer->cursorIndex] = tempChar;
 
     // Calculate cursor vertical position
     int height = 0;
     int counter = 0;
-    while (buffer->text[counter] != '\0'){
+    while (counter < buffer->cursorIndex){
       if (buffer->text[counter] == '\n'){
         height++;
         counter++;
@@ -86,7 +105,7 @@ void draw_to_screen(TextBuffer *buffer) {
     int LineHeight = 52;
     int whole_seconds = (int)GetTime();
     if (GetTime() - whole_seconds < 0.5){
-      DrawRectangle(55 + width, 50 + (height * LineHeight), 10, 45, PINK);
+      DrawRectangle(53 + width, 50 + (height * LineHeight), 2, 45, PINK);
     }
   EndDrawing();
 }
@@ -99,7 +118,8 @@ int main(void) {
   TextBuffer buffer = { 
     .text = {0}, 
     .letterCount = 0,
-    .timer = 0
+    .timer = 0,
+    .cursorIndex = 0
   };
 
 
