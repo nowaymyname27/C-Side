@@ -18,39 +18,45 @@ void handle_input(TextBuffer *buffer){
 
   // Drain the queue to handle multiple keypresses in one frame
   while (key != 0){
-    if (buffer->letterCount < BUFFER_SIZE - 1) {
-      buffer->text[buffer->letterCount] = (char)key;
-      buffer->letterCount++;
-      buffer->cursorIndex++;
-      buffer->text[buffer->letterCount] = '\0'; // Ensure string is always terminated
+    for (int i = buffer->letterCount; i >= buffer->cursorIndex; i--){
+      buffer->text[i + 1] = buffer->text[i];
     }
+    buffer->text[buffer->cursorIndex] = (char)key;
+    buffer->letterCount++;
+    buffer->cursorIndex++;
     key = GetCharPressed();
   }
 
   // Handles new line: Pressing ENTER allows for text to go to new line
   if (IsKeyPressed(KEY_ENTER)){
-    buffer->text[buffer->letterCount] = '\n';
+    for (int i = buffer->letterCount; i >= buffer->cursorIndex; i--){
+      buffer->text[i + 1] = buffer->text[i];
+    }
+    buffer->text[buffer->cursorIndex] = '\n';
     buffer->letterCount++;
     buffer->cursorIndex++;
-    buffer->text[buffer->letterCount] = '\0';
     buffer->timer = 0;
   }
 
   // Handle deletions: Decrease count and move the 'stop sign' back
-  if (IsKeyPressed(KEY_BACKSPACE) && buffer->letterCount > 0){
+  if (IsKeyPressed(KEY_BACKSPACE) && buffer->cursorIndex > 0){
+    for (int i = buffer->cursorIndex; i <= buffer->letterCount; i++) {
+      buffer->text[i - 1] = buffer->text[i];
+    }
     buffer->letterCount--;
     buffer->cursorIndex--;
-    buffer->text[buffer->letterCount] = '\0';
     buffer->timer = 0;
   }
 
   // Handle Deletions: When key is held deletes rapidly
-  if (IsKeyDown(KEY_BACKSPACE) && buffer->letterCount > 0){
+  if (IsKeyDown(KEY_BACKSPACE) && buffer->cursorIndex > 0){
     buffer->timer += GetFrameTime();
     if (buffer->timer > 0.6){
+    for (int i = buffer->cursorIndex; i <= buffer->letterCount; i++) {
+      buffer->text[i - 1] = buffer->text[i];
+    }
       buffer->letterCount--;
       buffer->cursorIndex--;
-      buffer->text[buffer->letterCount] = '\0';
       buffer->timer = 0.58;
     }
   } else {
@@ -74,7 +80,7 @@ void draw_to_screen(TextBuffer *buffer) {
   BeginDrawing();
     ClearBackground(DARKGRAY);
     // Draw the main text buffer
-    DrawText(buffer->text, 50, 50, 50, RED);
+    DrawText(buffer->text, 58, 50, 50, RED);
 
     // Calculate cursor horizontal position based on text width
     int iterator = buffer->cursorIndex - 1;
@@ -105,7 +111,7 @@ void draw_to_screen(TextBuffer *buffer) {
     int LineHeight = 52;
     int whole_seconds = (int)GetTime();
     if (GetTime() - whole_seconds < 0.5){
-      DrawRectangle(53 + width, 50 + (height * LineHeight), 2, 45, PINK);
+      DrawRectangle(57 + width, 50 + (height * LineHeight), 2, 45, PINK);
     }
   EndDrawing();
 }
