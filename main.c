@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include "buffer.h"
 #include "editor.c"
+#include <stdio.h>
 
 int main(void) {
   InitWindow(1024, 768, "C-Side");
@@ -13,7 +14,6 @@ int main(void) {
     .timer = 0,
     .cursorIndex = 0
   };
-
 
   // Main game loop
   while(!WindowShouldClose()){
