@@ -109,14 +109,31 @@ void handle_input(TextBuffer *buffer) {
       int previous_line_start = get_line_start(buffer, current_line_start - 1);
       int previous_line_end = get_line_end(buffer, previous_line_start);
       int target_index = previous_line_start + column;
-      if (target_index < previous_line_end){
+      if (target_index < previous_line_end) {
         buffer->cursorIndex = target_index;
       } else {
         buffer->cursorIndex = previous_line_end;
       }
     }
-    /* printf("Column: %d, current_line_start: %d \n", column, current_line_start); */
   }
+
+  if (IsKeyPressed(KEY_DOWN)) {
+    int column = get_column(buffer);
+    int current_line_end = get_line_end(buffer, buffer->cursorIndex);
+    if (buffer->text[current_line_end] != '\0') {
+      int next_line_start = current_line_end + 1;
+      int next_line_end = get_line_end(buffer, next_line_start);
+      int target_index = next_line_start + column;
+      if (target_index >= next_line_end) {
+        buffer->cursorIndex = next_line_end;
+      } else {
+        buffer->cursorIndex = target_index;
+      }
+    }
+  }
+
+  /* printf("Column: %d, current_line_start: %d \n", column,
+   * current_line_start); */
 }
 
 // Render the editor state to the window
