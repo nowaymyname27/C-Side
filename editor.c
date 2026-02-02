@@ -148,7 +148,8 @@ void draw_to_screen(TextBuffer *buffer) {
 
   char tempChar = buffer->text[buffer->cursorIndex];
   buffer->text[buffer->cursorIndex] = '\0';
-  i32 width = MeasureText(&buffer->text[line_start], 50);
+  Vector2 size = MeasureTextEx(buffer->editorFont, &buffer->text[line_start], 50, 0);
+  i32 width = (i32)size.x;
   buffer->text[buffer->cursorIndex] = tempChar;
 
   // Calculate cursor vertical position
