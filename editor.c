@@ -52,35 +52,35 @@ void debbug_log(TextBuffer *buffer) {
 }
 
 void handle_typing(TextBuffer *buffer) {
-    int key = GetCharPressed();
-    while (key != 0) {
-        buffer_insert(buffer, (char)key);
-        key = GetCharPressed();
-        debbug_log(buffer);
-    }
+  int key = GetCharPressed();
+  while (key != 0) {
+    buffer_insert(buffer, (char)key);
+    key = GetCharPressed();
+    debbug_log(buffer);
+  }
 }
 
 void handle_deletion(TextBuffer *buffer) {
-    // 1. Single Press
-    if (IsKeyPressed(KEY_BACKSPACE)) {
-        if (buffer->cursorIndex > 0) {
-            buffer_delete(buffer);
-            buffer->backspaceTimer = 0; // Reset timer on fresh press
-        }
+  // 1. Single Press
+  if (IsKeyPressed(KEY_BACKSPACE)) {
+    if (buffer->cursorIndex > 0) {
+      buffer_delete(buffer);
+      buffer->backspaceTimer = 0; // Reset timer on fresh press
     }
-    
-    // 2. Rapid Hold
-    if (IsKeyDown(KEY_BACKSPACE)) {
-        buffer->backspaceTimer += GetFrameTime();
-        if (buffer->backspaceTimer > 0.6) { // Threshold
-            if (buffer->cursorIndex > 0) {
-                buffer_delete(buffer);
-            }
-            buffer->backspaceTimer = 0.58; // Repeat rate
-        }
-    } else {
-        buffer->backspaceTimer = 0;
+  }
+
+  // 2. Rapid Hold
+  if (IsKeyDown(KEY_BACKSPACE)) {
+    buffer->backspaceTimer += GetFrameTime();
+    if (buffer->backspaceTimer > 0.6) { // Threshold
+      if (buffer->cursorIndex > 0) {
+        buffer_delete(buffer);
+      }
+      buffer->backspaceTimer = 0.58; // Repeat rate
     }
+  } else {
+    buffer->backspaceTimer = 0;
+  }
 }
 
 void move_cursor(TextBuffer *buffer, int key) {
@@ -118,54 +118,65 @@ void move_cursor(TextBuffer *buffer, int key) {
 }
 
 void handle_navigation(TextBuffer *buffer) {
-    // 1. Single Press Logic
-    if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) || 
-        IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
-        
-        int key = 0;
-        if (IsKeyPressed(KEY_LEFT)) key = KEY_LEFT;
-        else if (IsKeyPressed(KEY_RIGHT)) key = KEY_RIGHT;
-        else if (IsKeyPressed(KEY_UP)) key = KEY_UP;
-        else if (IsKeyPressed(KEY_DOWN)) key = KEY_DOWN;
+  // 1. Single Press Logic
+  if (IsKeyPressed(KEY_LEFT) || IsKeyPressed(KEY_RIGHT) ||
+      IsKeyPressed(KEY_UP) || IsKeyPressed(KEY_DOWN)) {
 
-        move_cursor(buffer, key);
-        buffer->moveTimer = 0;
-    }
+    int key = 0;
+    if (IsKeyPressed(KEY_LEFT))
+      key = KEY_LEFT;
+    else if (IsKeyPressed(KEY_RIGHT))
+      key = KEY_RIGHT;
+    else if (IsKeyPressed(KEY_UP))
+      key = KEY_UP;
+    else if (IsKeyPressed(KEY_DOWN))
+      key = KEY_DOWN;
 
-    // 2. Rapid Hold Logic
-    if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || 
-        IsKeyDown(KEY_UP) || IsKeyDown(KEY_DOWN)) {
-        
-        buffer->moveTimer += GetFrameTime();
-        if (buffer->moveTimer > 0.6) {
-            // Check keys and move... (use your existing logic here)
-            if (IsKeyDown(KEY_LEFT)) move_cursor(buffer, KEY_LEFT);
-            else if (IsKeyDown(KEY_RIGHT)) move_cursor(buffer, KEY_RIGHT);
-            else if (IsKeyDown(KEY_UP)) move_cursor(buffer, KEY_UP);
-            else if (IsKeyDown(KEY_DOWN)) move_cursor(buffer, KEY_DOWN);
-            
-            buffer->moveTimer = 0.58;
-        }
-    } else {
-        buffer->moveTimer = 0;
+    move_cursor(buffer, key);
+    buffer->moveTimer = 0;
+  }
+
+  // 2. Rapid Hold Logic
+  if (IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_UP) ||
+      IsKeyDown(KEY_DOWN)) {
+
+    buffer->moveTimer += GetFrameTime();
+    if (buffer->moveTimer > 0.6) {
+      // Check keys and move... (use your existing logic here)
+      if (IsKeyDown(KEY_LEFT))
+        move_cursor(buffer, KEY_LEFT);
+      else if (IsKeyDown(KEY_RIGHT))
+        move_cursor(buffer, KEY_RIGHT);
+      else if (IsKeyDown(KEY_UP))
+        move_cursor(buffer, KEY_UP);
+      else if (IsKeyDown(KEY_DOWN))
+        move_cursor(buffer, KEY_DOWN);
+
+      buffer->moveTimer = 0.58;
     }
+  } else {
+    buffer->moveTimer = 0;
+  }
 }
-
-
 
 // Process keyboard input and update the buffer state
 void handle_input(TextBuffer *buffer) {
-    handle_typing(buffer);
+  handle_typing(buffer);
 
-    if (IsKeyPressed(KEY_ENTER)) {
-        buffer_insert(buffer, '\n');
-        debbug_log(buffer);
-    }
+  if (IsKeyPressed(KEY_ENTER)) {
+    buffer_insert(buffer, '\n');
+    debbug_log(buffer);
+  }
 
-    handle_deletion(buffer);
-    handle_navigation(buffer);
+  if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_S)) {
+    write_to_file(buffer);
+  }
+  if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_O)) {
+    open_file(buffer);
+  }
+  handle_deletion(buffer);
+  handle_navigation(buffer);
 }
-
 
 // Render the editor state to the window
 void draw_to_screen(TextBuffer *buffer) {
@@ -204,4 +215,43 @@ void draw_to_screen(TextBuffer *buffer) {
     DrawRectangle(57 + width, 50 + (height * LineHeight), 2, 45, PINK);
   }
   EndDrawing();
+}
+
+// Updated signature: takes offsets so we can place it inside the Clay layout
+void draw_text_buffer(TextBuffer *buffer, int offX, int offY) {
+  // 1. Draw Text at the offset
+  DrawTextEx(buffer->editorFont, buffer->text, (Vector2){(float)offX, (float)offY}, 50, 0, RED);
+
+  // 2. Calculate Cursor Position
+  i32 line_start = get_line_start(buffer, buffer->cursorIndex);
+  
+  // Sneaky swap to measure just the current line segment
+  char tempChar = buffer->text[buffer->cursorIndex];
+  buffer->text[buffer->cursorIndex] = '\0';
+  Vector2 size = MeasureTextEx(buffer->editorFont, &buffer->text[line_start], 50, 0);
+  i32 cursorX = (i32)size.x;
+  buffer->text[buffer->cursorIndex] = tempChar;
+
+  // 3. Calculate Vertical Position (Row count)
+  i32 height = 0;
+  i32 counter = 0;
+  while (counter < buffer->cursorIndex) {
+    if (buffer->text[counter] == '\n') {
+      height++;
+      counter++;
+    } else {
+      counter++;
+    }
+  }
+
+  // 4. Draw Cursor (Offset + calculated pos)
+  i32 LineHeight = 52;
+  i32 whole_seconds = (int)GetTime();
+  if (GetTime() - whole_seconds < 0.5) {
+    DrawRectangle(
+        offX + cursorX,           // Base X + Text Width
+        offY + (height * LineHeight), // Base Y + Line Rows
+        2, 45, PINK
+    );
+  }
 }

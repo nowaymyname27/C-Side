@@ -1,4 +1,5 @@
 -I./clay
+-I./clay/renderers/raylib
 -I/opt/homebrew/include
 -L/opt/homebrew/lib
 -lraylib
