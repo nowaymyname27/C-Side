@@ -4,7 +4,7 @@
 
 // Inserts char into where the cursorIndex is
 void buffer_insert(TextBuffer *buffer, char c) {
-  for (int i = buffer->letterCount; i >= buffer->cursorIndex; i--) {
+  for (i32 i = buffer->letterCount; i >= buffer->cursorIndex; i--) {
     buffer->text[i + 1] = buffer->text[i];
   }
   buffer->text[buffer->cursorIndex] = c;
@@ -13,37 +13,37 @@ void buffer_insert(TextBuffer *buffer, char c) {
 }
 
 void buffer_delete(TextBuffer *buffer) {
-  for (int i = buffer->cursorIndex; i <= buffer->letterCount; i++) {
+  for (i32 i = buffer->cursorIndex; i <= buffer->letterCount; i++) {
     buffer->text[i - 1] = buffer->text[i];
   }
   buffer->letterCount--;
   buffer->cursorIndex--;
 }
 
-int get_line_start(TextBuffer *buffer, int from_index) {
-  int i = from_index - 1;
+i32 get_line_start(TextBuffer *buffer, i32 from_index) {
+  i32 i = from_index - 1;
   while (i >= 0 && buffer->text[i] != '\n') {
     i--;
   }
   return i + 1;
 }
 
-int get_line_end(TextBuffer *buffer, int from_index) {
-  int i = from_index;
+i32 get_line_end(TextBuffer *buffer, i32 from_index) {
+  i32 i = from_index;
   while (buffer->text[i] != '\n' && buffer->text[i] != '\0') {
     i++;
   }
   return i;
 }
 
-int get_column(TextBuffer *buffer) {
-  int line_start = get_line_start(buffer, buffer->cursorIndex);
+i32 get_column(TextBuffer *buffer) {
+  i32 line_start = get_line_start(buffer, buffer->cursorIndex);
   return buffer->cursorIndex - line_start;
 }
 
 void debbug_log(TextBuffer *buffer) {
-  int line_start = get_line_start(buffer, buffer->cursorIndex);
-  int column = get_column(buffer);
+  i32 line_start = get_line_start(buffer, buffer->cursorIndex);
+  i32 column = get_column(buffer);
   printf("text: %s \n", buffer->text);
   printf("letterCount: %d \n", buffer->letterCount);
   printf("cursorIndex: %d \n", buffer->cursorIndex);
@@ -54,7 +54,7 @@ void debbug_log(TextBuffer *buffer) {
 // Process keyboard input and update the buffer state
 void handle_input(TextBuffer *buffer) {
   // GetCharPressed returns characters from the internal Raylib queue
-  int key = GetCharPressed();
+  i32 key = GetCharPressed();
 
   // Drain the queue to handle multiple keypresses in one frame
   while (key != 0) {
@@ -102,13 +102,13 @@ void handle_input(TextBuffer *buffer) {
   }
 
   if (IsKeyPressed(KEY_UP)) {
-    int column = get_column(buffer);
-    int current_line_start = get_line_start(buffer, buffer->cursorIndex);
+    i32 column = get_column(buffer);
+    i32 current_line_start = get_line_start(buffer, buffer->cursorIndex);
 
     if (current_line_start != 0) {
-      int previous_line_start = get_line_start(buffer, current_line_start - 1);
-      int previous_line_end = get_line_end(buffer, previous_line_start);
-      int target_index = previous_line_start + column;
+      i32 previous_line_start = get_line_start(buffer, current_line_start - 1);
+      i32 previous_line_end = get_line_end(buffer, previous_line_start);
+      i32 target_index = previous_line_start + column;
       if (target_index < previous_line_end) {
         buffer->cursorIndex = target_index;
       } else {
@@ -118,12 +118,12 @@ void handle_input(TextBuffer *buffer) {
   }
 
   if (IsKeyPressed(KEY_DOWN)) {
-    int column = get_column(buffer);
-    int current_line_end = get_line_end(buffer, buffer->cursorIndex);
+    i32 column = get_column(buffer);
+    i32 current_line_end = get_line_end(buffer, buffer->cursorIndex);
     if (buffer->text[current_line_end] != '\0') {
-      int next_line_start = current_line_end + 1;
-      int next_line_end = get_line_end(buffer, next_line_start);
-      int target_index = next_line_start + column;
+      i32 next_line_start = current_line_end + 1;
+      i32 next_line_end = get_line_end(buffer, next_line_start);
+      i32 target_index = next_line_start + column;
       if (target_index >= next_line_end) {
         buffer->cursorIndex = next_line_end;
       } else {
@@ -141,19 +141,19 @@ void draw_to_screen(TextBuffer *buffer) {
   BeginDrawing();
   ClearBackground(BLACK);
   // Draw the main text buffer
-  DrawText(buffer->text, 58, 50, 50, RED);
+  DrawTextEx(buffer->editorFont, buffer->text, (Vector2){58.0f, 50.0f}, 50, 0, RED);
 
   // Calculate cursor horizontal position based on text width
-  int line_start = get_line_start(buffer, buffer->cursorIndex);
+  i32 line_start = get_line_start(buffer, buffer->cursorIndex);
 
   char tempChar = buffer->text[buffer->cursorIndex];
   buffer->text[buffer->cursorIndex] = '\0';
-  int width = MeasureText(&buffer->text[line_start], 50);
+  i32 width = MeasureText(&buffer->text[line_start], 50);
   buffer->text[buffer->cursorIndex] = tempChar;
 
   // Calculate cursor vertical position
-  int height = 0;
-  int counter = 0;
+  i32 height = 0;
+  i32 counter = 0;
   while (counter < buffer->cursorIndex) {
     if (buffer->text[counter] == '\n') {
       height++;
@@ -164,8 +164,8 @@ void draw_to_screen(TextBuffer *buffer) {
   }
 
   // Blinking logic: Draw cursor only during the first half of every second
-  int LineHeight = 52;
-  int whole_seconds = (int)GetTime();
+  i32 LineHeight = 52;
+  i32 whole_seconds = (int)GetTime();
   if (GetTime() - whole_seconds < 0.5) {
     DrawRectangle(57 + width, 50 + (height * LineHeight), 2, 45, PINK);
   }
