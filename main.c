@@ -11,7 +11,8 @@ int main(void) {
   TextBuffer buffer = {
       .text = {0},
       .letterCount = 0,
-      .timer = 0,
+      .backspaceTimer = 0,
+      .moveTimer = 0,
       .cursorIndex = 0
   };
 

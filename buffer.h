@@ -27,12 +27,17 @@ typedef int32_t b32; // Used when you want the boolean to take exactly 4 bytes
 #define BUFFER_H
 #define BUFFER_SIZE 2049
 
+typedef enum { BACKSPACE_TIMER, MOVE_TIMER } TimerType;
+
 typedef struct {
   char text[BUFFER_SIZE];
   Font editorFont;
   i32 letterCount;
-  f32 timer;
   i32 cursorIndex;
+
+  // Timers
+  f32 backspaceTimer;
+  f32 moveTimer;
 } TextBuffer;
 
 #endif
