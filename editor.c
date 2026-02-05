@@ -2,6 +2,42 @@
 #include "raylib.h"
 #include <stdio.h>
 
+// Helper to get the visual X/Y for a specific index in the text
+Vector2 get_visual_position(TextBuffer *buffer, int targetIndex, int startX, int startY, int maxWidth) {
+    int currentX = 0; // Relative to startX
+    int currentY = 0; // Relative to startY
+    
+    // Measure the width of a single character (using Monospace assumption)
+    // "M" is usually the standard width test
+    float charWidth = MeasureTextEx(buffer->fonts[0], "M", 50, 0).x;
+    int lineHeight = 50; // Or your configured LineHeight
+
+    for (int i = 0; i < targetIndex; i++) {
+        char c = buffer->text[i];
+
+        if (c == '\n') {
+            currentX = 0;
+            currentY += lineHeight;
+        } else {
+            // Advance cursor
+            currentX += (int)charWidth;
+
+            // WRAP LOGIC: Check if we just went past the limit
+            // Only checks if the flag is enabled!
+            if (currentX >= maxWidth) {
+                currentX = 0; // Reset to start of next line
+                currentY += lineHeight;
+                
+                // If the character wasn't a newline, we draw it on the NEW line, so advance X
+                // (Unless we want it to sit on the left edge)
+                currentX += (int)charWidth; 
+            }
+        }
+    }
+
+    return (Vector2){ (float)(startX + currentX), (float)(startY + currentY) };
+}
+
 // Inserts char into where the cursorIndex is
 void buffer_insert(TextBuffer *buffer, char c) {
   for (i32 i = buffer->letterCount; i >= buffer->cursorIndex; i--) {
@@ -182,15 +218,14 @@ void handle_input(TextBuffer *buffer) {
 
   if (IsKeyPressed(KEY_ENTER)) {
     buffer_insert(buffer, '\n');
-    debbug_log(buffer);
+    if (buffer->debugFlag != 0){
+      debbug_log(buffer);
+    }
   }
-
   if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_S)) {
     write_to_file(buffer);
   }
-  if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_O)) {
-    open_file(buffer, "test.txt");
-  }
+
   if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_D)){
     if (buffer->debugFlag == 0){
       buffer->debugFlag = 1;
@@ -202,41 +237,45 @@ void handle_input(TextBuffer *buffer) {
   handle_navigation(buffer);
 }
 
-// Updated signature: takes offsets so we can place it inside the Clay layout
-void draw_text_buffer(TextBuffer *buffer, int offX, int offY) {
-  // 1. Draw Text at the offset
-  DrawTextEx(buffer->fonts[0], buffer->text, (Vector2){(float)offX, (float)offY}, 50, 0, (Color){30, 30, 30, 255});
 
-  // 2. Calculate Cursor Position
-  i32 line_start = get_line_start(buffer, buffer->cursorIndex);
-  
-  // Sneaky swap to measure just the current line segment
-  char tempChar = buffer->text[buffer->cursorIndex];
-  buffer->text[buffer->cursorIndex] = '\0';
-  Vector2 size = MeasureTextEx(buffer->fonts[0], &buffer->text[line_start], 50, 0);
-  i32 cursorX = (i32)size.x;
-  buffer->text[buffer->cursorIndex] = tempChar;
+void draw_text_buffer(TextBuffer *buffer, int startX, int startY, int maxWidth) {
+    float charWidth = MeasureTextEx(buffer->fonts[0], "M", 50, 0).x;
+    int lineHeight = 50; 
+    
+    int currentX = startX;
+    int currentY = startY;
 
-  // 3. Calculate Vertical Position (Row count)
-  i32 height = 0;
-  i32 counter = 0;
-  while (counter < buffer->cursorIndex) {
-    if (buffer->text[counter] == '\n') {
-      height++;
-      counter++;
-    } else {
-      counter++;
+    for (int i = 0; i <= buffer->letterCount; i++) {
+        
+        // 1. Draw Cursor
+        if (i == buffer->cursorIndex) {
+            // Force cursor visible if moving, otherwise blink
+            if (buffer->moveTimer > 0 || (GetTime() - (int)GetTime()) < 0.5) {
+                DrawRectangle(currentX, currentY, 2, lineHeight, (Color){255, 200, 0, 255});
+            }
+        }
+
+        if (buffer->text[i] == '\0') break;
+
+        char c = buffer->text[i];
+
+        if (c == '\n') {
+            currentX = startX;
+            currentY += lineHeight;
+        } 
+        else {
+            // ALWAYS CHECK WRAPPING NOW
+            // If adding this char would push us past maxWidth...
+            if (currentX + charWidth > startX + maxWidth) {
+                currentX = startX;      // Reset to left
+                currentY += lineHeight; // Move down
+            }
+
+            // Draw char
+            char charStr[2] = { c, '\0' };
+            DrawTextEx(buffer->fonts[0], charStr, (Vector2){(float)currentX, (float)currentY}, 50, 0, (Color){30, 30, 30, 255});
+
+            currentX += (int)charWidth;
+        }
     }
-  }
-
-  // 4. Draw Cursor (Offset + calculated pos)
-  i32 LineHeight = 52;
-  i32 whole_seconds = (int)GetTime();
-  if (GetTime() - whole_seconds < 0.5) {
-    DrawRectangle(
-        offX + cursorX,           // Base X + Text Width
-        offY + (height * LineHeight), // Base Y + Line Rows
-        2, 45, (Color){255, 200, 0, 255}
-    );
-  }
 }

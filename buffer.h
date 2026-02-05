@@ -46,12 +46,14 @@ typedef struct {
   i32 fileCount;
   char currentFilename[MAX_FILENAME_LEN];
 
+  // flags
   b8 debugFlag;
 } TextBuffer;
 
 void write_to_file(TextBuffer *buffer);
 void open_file(TextBuffer *buffer, char *filename);
+void create_new_file(TextBuffer *buffer);
 
-void draw_text_buffer(TextBuffer *buffer, int offX, int offY);
+void draw_text_buffer(TextBuffer *buffer, int startX, int startY, int maxWidth);
 
 #endif

@@ -36,10 +36,10 @@ void RenderSidebarButton(TextBuffer *buffer, char *filename) {
     // Interaction: Check hover state using the ID
     .backgroundColor = 
       isActive
-      ? (Clay_Color){255, 90, 90, 255} // rgb(255,90,90)
+      ? (Clay_Color){255, 110, 110, 255} // rgb(255,110,110)
       : Clay_PointerOver(elementId) 
         ? (Clay_Color){255, 100, 100, 255} // rgb(255,100,100)
-        : (Clay_Color){60, 60, 60, 255}, 
+        : (Clay_Color){255, 90, 90, 255},  // rgb(255,90,90)
     .cornerRadius = CLAY_CORNER_RADIUS(8)
   })
 
@@ -53,6 +53,35 @@ void RenderSidebarButton(TextBuffer *buffer, char *filename) {
   if (Clay_PointerOver(elementId) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
     printf("Clicked on: %s\n", filename);
     open_file(buffer, filename);
+  }
+}
+
+void RenderNewFileButton(TextBuffer *buffer) {
+  CLAY(
+    CLAY_ID("NewFileButton"), 
+    (Clay_ElementDeclaration) { 
+      .layout = { 
+        .sizing = { .width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(40) },
+        .padding = { 10, 10 },
+        .childAlignment = { .y = CLAY_ALIGN_Y_CENTER }
+      },
+      .backgroundColor = Clay_PointerOver(Clay_GetElementId(CLAY_STRING("NewFileButton"))) 
+        ? (Clay_Color){255, 246, 163, 255}  // rgb(255,246,163) Hover
+        : (Clay_Color){255, 243, 133, 255}, // rgb(255,243,133) Default
+      .cornerRadius = CLAY_CORNER_RADIUS(8)
+      }
+  ) 
+  {
+    CLAY_TEXT(
+      CLAY_STRING("New Note"), 
+      CLAY_TEXT_CONFIG({ 
+        .fontSize = 20, 
+        .textColor = {0, 0, 0, 255}, 
+        .fontId = 0 }));
+  }
+
+  if (Clay_PointerOver(Clay_GetElementId(CLAY_STRING("NewFileButton"))) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+      create_new_file(buffer);
   }
 }
 
@@ -92,6 +121,19 @@ void layout_ui(TextBuffer *buffer) {
           .backgroundColor = {255, 66, 66, 255} // rgb(255,66,66)
          })  
   {
+    RenderNewFileButton(buffer);
+
+    CLAY(
+        CLAY_ID("Spacer"),
+        (Clay_ElementDeclaration) {
+          .layout = {
+            .sizing = {
+              .height = CLAY_SIZING_FIXED(10)
+            }
+          }
+        }
+    ) {}
+
     // sidebar buttons loop here 
     for (int i = 0; i < buffer->fileCount; i++) {
       RenderSidebarButton(buffer, buffer->files[i]);
@@ -116,9 +158,12 @@ void layout_ui(TextBuffer *buffer) {
   Clay_Raylib_Render(renderCommands, buffer->fonts);
 
   // Sidebar (250) + Padding (20)
-  int editorX = 250 + 20;
-  int editorY = 20;
+  int sidebarWidth = 250;
+  int padding = 20;
+  int startX = sidebarWidth + padding;
+  int startY = 20;
 
   // Draw your logic inside that calculated space
-  draw_text_buffer(buffer, editorX, editorY);
+  int width = GetScreenWidth() - startX - padding;
+  draw_text_buffer(buffer, startX, startY, width);
 }
