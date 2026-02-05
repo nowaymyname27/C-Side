@@ -48,7 +48,7 @@ Text manipulation uses a linear buffer approach. Inserting or deleting character
 ## Installation & Build
 
 ### Prerequisites
-*   **C Compiler** (GCC or Clang)
+*   **C Compiler** (GCC, Clang, or if you're crazy like me you can use the Zig compiler)
 *   **Raylib** (Installed via Homebrew on Mac, or linked locally)
 
 ### Building
