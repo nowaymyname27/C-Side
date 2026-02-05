@@ -4,6 +4,7 @@ A lightweight, custom-built text editor engine written in C99.
 
 C-Side Notes is a minimal text editor that implements a custom text buffer engine, 2D cursor navigation logic, and a hybrid rendering system using **Raylib** for the backend and **Clay** for the UI layout.
 
+![C-Side](screenshots/C-Side.png)
 
 ## Features
 
