@@ -1,1 +1,12 @@
-Heeelooo
+Hello World!
+
+This is my text editor C-Side! It was made using C with the help of the Raylib and Clay libraries. So far it has these features:
+
+- Soft Wrapping
+- Cursor Movement
+- Save/Open New Notes
+- Text Editing (duh!)
+- Creating new notes
+- Window resizing
+
+...and many more details that you can learn about in the README!

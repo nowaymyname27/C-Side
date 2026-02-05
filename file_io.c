@@ -22,20 +22,30 @@ void write_to_file(TextBuffer *buffer) {
 }
 
 void open_file(TextBuffer *buffer, char *filename) {
-  // 1. Construct the path
   char filepath[128]; 
-  sprintf(filepath, "notes/%s", filename); // glues "notes/" + "test.txt"
+  sprintf(filepath, "notes/%s", filename); 
 
-  // 2. Open using the full path
   FILE *f = fopen(filepath, "r");
   
   if (f != NULL) {
     fseek(f, 0, SEEK_END);
-    buffer->letterCount = ftell(f);
+    long filesize = ftell(f); // Get raw size
     rewind(f);
+
+    // Clamp size to buffer limit
+    if (filesize >= BUFFER_SIZE) {
+        printf("Warning: File too large! Truncating.\n");
+        filesize = BUFFER_SIZE - 1; // Leave room for \0
+    }
+
+    buffer->letterCount = (i32)filesize;
+    
+    // Read only the safe amount
     fread(buffer->text, 1, buffer->letterCount, f);
+    
     buffer->text[buffer->letterCount] = '\0';
-    buffer->cursorIndex = buffer->letterCount; // Move cursor to end
+    buffer->cursorIndex = buffer->letterCount;
+    
     strncpy(buffer->currentFilename, filename, MAX_FILENAME_LEN);
     printf("Opened: %s\n", filepath);
     fclose(f);
