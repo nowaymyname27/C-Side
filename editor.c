@@ -56,7 +56,9 @@ void handle_typing(TextBuffer *buffer) {
   while (key != 0) {
     buffer_insert(buffer, (char)key);
     key = GetCharPressed();
-    debbug_log(buffer);
+    if (buffer->debugFlag != 0){
+      debbug_log(buffer);
+    }
   }
 }
 
@@ -66,6 +68,9 @@ void handle_deletion(TextBuffer *buffer) {
     if (buffer->cursorIndex > 0) {
       buffer_delete(buffer);
       buffer->backspaceTimer = 0; // Reset timer on fresh press
+    }
+    if (buffer->debugFlag != 0){
+      debbug_log(buffer);
     }
   }
 
@@ -80,6 +85,9 @@ void handle_deletion(TextBuffer *buffer) {
     }
   } else {
     buffer->backspaceTimer = 0;
+  }
+  if (buffer->debugFlag != 0){
+      debbug_log(buffer);
   }
 }
 
@@ -115,6 +123,9 @@ void move_cursor(TextBuffer *buffer, int key) {
       }
     }
   }
+  if (buffer->debugFlag != 0){
+      debbug_log(buffer);
+  }
 }
 
 void handle_navigation(TextBuffer *buffer) {
@@ -134,6 +145,9 @@ void handle_navigation(TextBuffer *buffer) {
 
     move_cursor(buffer, key);
     buffer->moveTimer = 0;
+    if (buffer->debugFlag != 0){
+      debbug_log(buffer);
+    }
   }
 
   // 2. Rapid Hold Logic
@@ -157,6 +171,9 @@ void handle_navigation(TextBuffer *buffer) {
   } else {
     buffer->moveTimer = 0;
   }
+  if (buffer->debugFlag != 0){
+      debbug_log(buffer);
+  }
 }
 
 // Process keyboard input and update the buffer state
@@ -173,6 +190,13 @@ void handle_input(TextBuffer *buffer) {
   }
   if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_O)) {
     open_file(buffer, "test.txt");
+  }
+  if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_D)){
+    if (buffer->debugFlag == 0){
+      buffer->debugFlag = 1;
+    } else {
+      buffer->debugFlag = 0;
+    }
   }
   handle_deletion(buffer);
   handle_navigation(buffer);

@@ -44,6 +44,8 @@ typedef struct {
   // File State
   char files[MAX_FILES][MAX_FILENAME_LEN];
   i32 fileCount;
+
+  b8 debugFlag;
 } TextBuffer;
 
 void write_to_file(TextBuffer *buffer);

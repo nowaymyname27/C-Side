@@ -26,7 +26,10 @@ int main(void) {
     Clay_Raylib_Initialize(1024, 768, "C-Side Notes", FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
 
     // 3. Setup Logic Data
-    TextBuffer buffer = { .text = {0}, .cursorIndex = 0 };
+    TextBuffer buffer = { 
+      .text = {0},
+      .cursorIndex = 0 
+    };
     
     // 4. Load Resources
     buffer.fonts[0] = LoadFontEx("resources/JetBrainsMono-Light.ttf", 55, NULL, 0);
@@ -41,7 +44,7 @@ int main(void) {
 
         // We wrap everything in the standard Raylib drawing block
         BeginDrawing();
-        ClearBackground(DARKPURPLE); // Apple Notes uses Light/White background
+        ClearBackground(DARKPURPLE);
         
         layout_ui(&buffer);
         

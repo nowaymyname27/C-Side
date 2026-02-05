@@ -24,26 +24,25 @@ void RenderSidebarButton(TextBuffer *buffer, char *filename) {
   Clay_ElementId elementId = Clay_GetElementId(clayName);
 
   CLAY(elementId, (Clay_ElementDeclaration){
-  .layout = {
-    .sizing = {
-      .width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(40)
+    .layout = {
+      .sizing = {
+        .width = CLAY_SIZING_GROW(0), .height = CLAY_SIZING_FIXED(40)
+      },
+      .padding = {10, 10, 10, 10},
+      .childAlignment = {.y = CLAY_ALIGN_Y_CENTER}
     },
-    .padding = {10, 10, 10, 10},
-    .childAlignment = {.y = CLAY_ALIGN_Y_CENTER}
-  },
-  // Interaction: Check hover state using the ID
-  .backgroundColor = Clay_PointerOver(elementId) ? (Clay_Color){255, 90, 90, 255} : (Clay_Color){255, 100, 100, 255},
-  .cornerRadius = CLAY_CORNER_RADIUS(8)
-
+    // Interaction: Check hover state using the ID
+    .backgroundColor = Clay_PointerOver(elementId) 
+      ? (Clay_Color){255, 90, 90, 255} // rgb(255,90,90)
+      : (Clay_Color){255, 100, 100, 255}, // rgb(255,100,100)
+    .cornerRadius = CLAY_CORNER_RADIUS(8)
   })
 
-  {
-    CLAY_TEXT(clayName, // Use the converted string
-        CLAY_TEXT_CONFIG({
-          .fontSize = 20, 
-          .textColor = {200, 200, 200, 255}, 
-          .fontId = 0}));
-  }
+  CLAY_TEXT(clayName, // Use the converted string
+      CLAY_TEXT_CONFIG({
+        .fontSize = 20, 
+        .textColor = {200, 200, 200, 255}, // rgb(200,200,200)
+        .fontId = 0}));
 
   // Interaction Logic: Click to Open
   if (Clay_PointerOver(elementId) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
@@ -74,24 +73,23 @@ void layout_ui(TextBuffer *buffer) {
           .backgroundColor = {255, 229, 244, 255} // rgb(255,229,244)
        }) 
   {
-    // --- SIDEBAR ---
-    CLAY(
-        CLAY_ID("Sidebar"), 
-        (Clay_ElementDeclaration){
-          .layout = {
-            .sizing = {
-              .width = CLAY_SIZING_FIXED(250),
-              .height = CLAY_SIZING_GROW(0)},
-              .padding = {10, 10, 10, 10},
-              .childGap = 5,
-              .layoutDirection = CLAY_TOP_TO_BOTTOM},
-              .backgroundColor = {255, 66, 66, 255} // rgb(255,66,66)
+  // --- SIDEBAR ---
+  CLAY(
+    CLAY_ID("Sidebar"), 
+    (Clay_ElementDeclaration){
+      .layout = {
+        .sizing = {
+          .width = CLAY_SIZING_FIXED(250),
+          .height = CLAY_SIZING_GROW(0)},
+          .padding = {10, 10, 10, 10},
+          .childGap = 5,
+          .layoutDirection = CLAY_TOP_TO_BOTTOM},
+          .backgroundColor = {255, 66, 66, 255} // rgb(255,66,66)
          }) 
-    {
-      // sidebar buttons loop here 
-      for (int i = 0; i < buffer->fileCount; i++) {
-        RenderSidebarButton(buffer, buffer->files[i]);
-      }
+    
+    // sidebar buttons loop here 
+    for (int i = 0; i < buffer->fileCount; i++) {
+      RenderSidebarButton(buffer, buffer->files[i]);
     }
 
     // --- EDITOR AREA ---
@@ -105,7 +103,7 @@ void layout_ui(TextBuffer *buffer) {
               .height = CLAY_SIZING_GROW(0)},
               .padding = {20, 20, 20, 20} // Nice padding for text
           },
-          .backgroundColor = {255, 229, 244, 255} }) {} // rgb(255,229,244)  
+          .backgroundColor = {255, 229, 244, 255} }) {} // rgb(255,229,244)
   }
 
   // 3. Render the Layout
