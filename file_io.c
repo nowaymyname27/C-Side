@@ -6,9 +6,12 @@
 
 // Update to accept a filename, or keep hardcoded but add folder
 void write_to_file(TextBuffer *buffer) {
-  // Construct path
+  if (strlen(buffer->currentFilename)){
+    printf("No file open! Cannot save.\n");
+    return;
+  }
   char filepath[128];
-  sprintf(filepath, "notes/test.txt"); // Or use a variable filename
+  sprintf(filepath, "notes/%s", buffer->currentFilename); // Or use a variable filename
 
   FILE *f = fopen(filepath, "w");
   if (f != NULL) {

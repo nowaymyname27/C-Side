@@ -23,6 +23,8 @@ void RenderSidebarButton(TextBuffer *buffer, char *filename) {
   // We use the ID based on the string content
   Clay_ElementId elementId = Clay_GetElementId(clayName);
 
+  bool isActive = (strcmp(buffer->currentFilename, filename) == 0);
+
   CLAY(elementId, (Clay_ElementDeclaration){
     .layout = {
       .sizing = {
@@ -32,9 +34,12 @@ void RenderSidebarButton(TextBuffer *buffer, char *filename) {
       .childAlignment = {.y = CLAY_ALIGN_Y_CENTER}
     },
     // Interaction: Check hover state using the ID
-    .backgroundColor = Clay_PointerOver(elementId) 
+    .backgroundColor = 
+      isActive
       ? (Clay_Color){255, 90, 90, 255} // rgb(255,90,90)
-      : (Clay_Color){255, 100, 100, 255}, // rgb(255,100,100)
+      : Clay_PointerOver(elementId) 
+        ? (Clay_Color){255, 100, 100, 255} // rgb(255,100,100)
+        : (Clay_Color){60, 60, 60, 255}, 
     .cornerRadius = CLAY_CORNER_RADIUS(8)
   })
 
@@ -85,13 +90,13 @@ void layout_ui(TextBuffer *buffer) {
           .childGap = 5,
           .layoutDirection = CLAY_TOP_TO_BOTTOM},
           .backgroundColor = {255, 66, 66, 255} // rgb(255,66,66)
-         }) 
-    
+         })  
+  {
     // sidebar buttons loop here 
     for (int i = 0; i < buffer->fileCount; i++) {
       RenderSidebarButton(buffer, buffer->files[i]);
     }
-
+  }
     // --- EDITOR AREA ---
     // We give this an ID so we can find it later!
     CLAY(
