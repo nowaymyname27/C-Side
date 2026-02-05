@@ -172,55 +172,16 @@ void handle_input(TextBuffer *buffer) {
     write_to_file(buffer);
   }
   if (IsKeyDown(KEY_LEFT_SUPER) && IsKeyPressed(KEY_O)) {
-    open_file(buffer);
+    open_file(buffer, "test.txt");
   }
   handle_deletion(buffer);
   handle_navigation(buffer);
 }
 
-// Render the editor state to the window
-void draw_to_screen(TextBuffer *buffer) {
-  BeginDrawing();
-  ClearBackground(BLACK);
-  // Draw the main text buffer
-  DrawTextEx(buffer->editorFont, buffer->text, (Vector2){58.0f, 50.0f}, 50, 0,
-             RED);
-
-  // Calculate cursor horizontal position based on text width
-  i32 line_start = get_line_start(buffer, buffer->cursorIndex);
-
-  char tempChar = buffer->text[buffer->cursorIndex];
-  buffer->text[buffer->cursorIndex] = '\0';
-  Vector2 size =
-      MeasureTextEx(buffer->editorFont, &buffer->text[line_start], 50, 0);
-  i32 width = (i32)size.x;
-  buffer->text[buffer->cursorIndex] = tempChar;
-
-  // Calculate cursor vertical position
-  i32 height = 0;
-  i32 counter = 0;
-  while (counter < buffer->cursorIndex) {
-    if (buffer->text[counter] == '\n') {
-      height++;
-      counter++;
-    } else {
-      counter++;
-    }
-  }
-
-  // Blinking logic: Draw cursor only during the first half of every second
-  i32 LineHeight = 52;
-  i32 whole_seconds = (int)GetTime();
-  if (GetTime() - whole_seconds < 0.5) {
-    DrawRectangle(57 + width, 50 + (height * LineHeight), 2, 45, PINK);
-  }
-  EndDrawing();
-}
-
 // Updated signature: takes offsets so we can place it inside the Clay layout
 void draw_text_buffer(TextBuffer *buffer, int offX, int offY) {
   // 1. Draw Text at the offset
-  DrawTextEx(buffer->editorFont, buffer->text, (Vector2){(float)offX, (float)offY}, 50, 0, RED);
+  DrawTextEx(buffer->fonts[0], buffer->text, (Vector2){(float)offX, (float)offY}, 50, 0, (Color){30, 30, 30, 255});
 
   // 2. Calculate Cursor Position
   i32 line_start = get_line_start(buffer, buffer->cursorIndex);
@@ -228,7 +189,7 @@ void draw_text_buffer(TextBuffer *buffer, int offX, int offY) {
   // Sneaky swap to measure just the current line segment
   char tempChar = buffer->text[buffer->cursorIndex];
   buffer->text[buffer->cursorIndex] = '\0';
-  Vector2 size = MeasureTextEx(buffer->editorFont, &buffer->text[line_start], 50, 0);
+  Vector2 size = MeasureTextEx(buffer->fonts[0], &buffer->text[line_start], 50, 0);
   i32 cursorX = (i32)size.x;
   buffer->text[buffer->cursorIndex] = tempChar;
 
@@ -251,7 +212,7 @@ void draw_text_buffer(TextBuffer *buffer, int offX, int offY) {
     DrawRectangle(
         offX + cursorX,           // Base X + Text Width
         offY + (height * LineHeight), // Base Y + Line Rows
-        2, 45, PINK
+        2, 45, (Color){255, 200, 0, 255}
     );
   }
 }

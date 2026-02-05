@@ -27,20 +27,27 @@ typedef int32_t b32; // Used when you want the boolean to take exactly 4 bytes
 #define BUFFER_H
 #define BUFFER_SIZE 2049
 
+#define MAX_FILES 20
+#define MAX_FILENAME_LEN 64
+
 
 typedef struct {
   char text[BUFFER_SIZE];
-  Font editorFont;
+  Font fonts[1];
   i32 letterCount;
   i32 cursorIndex;
 
   // Timers
   f32 backspaceTimer;
   f32 moveTimer;
+
+  // File State
+  char files[MAX_FILES][MAX_FILENAME_LEN];
+  i32 fileCount;
 } TextBuffer;
 
 void write_to_file(TextBuffer *buffer);
-void open_file(TextBuffer *buffer);
+void open_file(TextBuffer *buffer, char *filename);
 
 void draw_text_buffer(TextBuffer *buffer, int offX, int offY);
 
